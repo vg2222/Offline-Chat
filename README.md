@@ -1,29 +1,32 @@
 # 📡 Offline Chat
 
-**Offline Chat** is a lightweight chat application that works **entirely over a Local Area Network (LAN)** — no internet connection required. Perfect for local office communication, classrooms, or any environment where devices are connected to the same Wi-Fi or Ethernet.
+**Offline Chat** — это лёгкое в использовании чат-приложение, работающее **полностью через локальную сеть (LAN)**. Не требуется подключение к интернету. Идеально подходит для офисов, классов, лабораторий, мастерских и любых других закрытых сетей.
 
-## 🚀 Features
+## 🚀 Возможности
 
-- 🔌 **Works without the Internet** — only requires a local network  
-- 💬 **Real-time messaging** between connected users  
-- 👀 **Clean and responsive UI** built with HTML, CSS, and JavaScript  
-- 🐍 **Python-powered backend** (Flask or similar)  
-- 🗣️ **Private messages** and **group chat** for all LAN users  
-- 🔎 **Automatic device discovery** on the local network  
+- 🔌 **Работает без интернета** — только локальная сеть (Wi-Fi или Ethernet)
+- 💬 **Обмен сообщениями в реальном времени** между пользователями
+- 👥 **Групповой и личный чат**
+- 🔎 **Автоматическое обнаружение пользователей** в сети
+- 👀 **Простой и адаптивный интерфейс** (HTML, CSS, JavaScript)
+- 🐍 **Бэкенд на Python (Flask)** — быстро и надёжно
 
-## 📦 Tech Stack
+## 📦 Технологии
 
 - **Frontend**: HTML, CSS, JavaScript  
 - **Backend**: Python (Flask)  
-- **Network**: Sockets / Local HTTP / Device discovery tools  
+- **Сеть**: Python sockets, HTTP, локальное обнаружение устройств
 
-## 📁 Use Cases
+## 📁 Примеры использования
 
-- Office chat without relying on external servers  
-- Communication in restricted networks (labs, workshops)  
-- Offline classrooms or campus setups  
-- Quick setup messaging for Raspberry Pi networks or LAN parties
+- Внутренний офисный чат без внешних серверов  
+- Связь внутри закрытых лабораторий или мастерских  
+- Общение в учебных классах без доступа к интернету  
+- LAN-вечеринки или сетевые проекты на Raspberry Pi
 
-## ⚙️ How to Run
+## ⚙️ Как запустить
 
-Just download the latest [release](https://github.com/vg2222/Offline-Chat/releases) or run download the repository and execute main.py
+Просто скачайте последний [релиз](https://github.com/vg2222/Offline-Chat/releases), программа сама проверит данные и запустится
+
+
+|Вам необходимо иметь подтвержденный файл сертификата чтобы запустить данную программу

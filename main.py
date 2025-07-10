@@ -212,7 +212,7 @@ def send_to(ip, message, sender, channel):
             error(f"Ошибка отправки, код ошибки: {str(status)}")
 
 def open_web():
-    time.sleep(4)
+    time.sleep(6)
     webbrowser.open_new_tab("http://127.0.0.1:43782")
 
 def check_if_started():

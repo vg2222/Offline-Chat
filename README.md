@@ -1,13 +1,29 @@
-# 📡 Чат без интернета
+# 📡 Offline Chat
 
-Чат, работающий **по локальной сети (LAN)** без доступа к интернету. Подходит для офисного использования, когда устройства подключены к одному Wi-Fi или Ethernet.
+**Offline Chat** is a lightweight chat application that works **entirely over a Local Area Network (LAN)** — no internet connection required. Perfect for local office communication, classrooms, or any environment where devices are connected to the same Wi-Fi or Ethernet.
 
-## 🚀 Возможности
+## 🚀 Features
 
-- 🔌 Работает без интернета - только по локальной сети
-- 💬 Мгновенный обмен сообщениями между пользователями
-- 👀 Удобный интерфейс на HTML + CSS + JS
-- 🐍 Серверная часть на Python
-- 🗣️ Личные сообщения и группа всех пользователей в локальной сети
-- 🔎 Автоматический поиск устройств
+- 🔌 **Works without the Internet** — only requires a local network  
+- 💬 **Real-time messaging** between connected users  
+- 👀 **Clean and responsive UI** built with HTML, CSS, and JavaScript  
+- 🐍 **Python-powered backend** (Flask or similar)  
+- 🗣️ **Private messages** and **group chat** for all LAN users  
+- 🔎 **Automatic device discovery** on the local network  
 
+## 📦 Tech Stack
+
+- **Frontend**: HTML, CSS, JavaScript  
+- **Backend**: Python (Flask)  
+- **Network**: Sockets / Local HTTP / Device discovery tools  
+
+## 📁 Use Cases
+
+- Office chat without relying on external servers  
+- Communication in restricted networks (labs, workshops)  
+- Offline classrooms or campus setups  
+- Quick setup messaging for Raspberry Pi networks or LAN parties
+
+## ⚙️ How to Run
+
+Just download the latest [release](https://github.com/vg2222/Offline-Chat/releases) or run download the repository and execute main.py

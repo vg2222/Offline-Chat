@@ -1,15 +1,15 @@
 :root {
     --tg-filter: invert(0);
-    --bg-color: #EBE0BE;
-    --panel-color: rgba(204, 165, 106, 0.8);
-    --panel-hover: rgba(161, 131, 84, 0.8);
-    --accent-color: rgba(175, 140, 88, 0.9);
-    --text-color: rgb(59, 56, 49);
-    --msg-bg: rgba(224, 180, 113, 0.9);
-    --input-bg: rgba(155,124,79,0.9);
-    --input-border: rgba(105,85,54,0.8);
-    --placeholder: rgb(87, 63, 40);
-    --link-color: #1d160b;
+    --bg-color: #dbdbdb;
+    --panel-color: rgba(202, 206, 211, 0.8);
+    --panel-hover: rgba(159, 167, 177, 0.8);
+    --accent-color: rgba(145, 159, 170, 0.9);
+    --text-color: rgb(39, 39, 39);
+    --msg-bg: rgba(184, 195, 206, 0.9);
+    --input-bg: rgba(139, 155, 165, 0.9);
+    --input-border: rgba(54, 99, 105, 0.8);
+    --placeholder: rgb(71, 71, 71);
+    --link-color: #0b131d;
 }
 
 body.dark-theme {

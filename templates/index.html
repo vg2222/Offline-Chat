@@ -10,7 +10,8 @@
     </head>
 
     <body>
-        <button id="theme-toggle" onclick="changeTheme" class="material-symbols-outlined theme-icon">dark_mode</button>
+        <button id="theme-toggle" class="material-symbols-outlined theme-icon">dark_mode</button>
+        <button id="shutdown" class="material-symbols-outlined">mode_off_on</button>
 
         <div id="loading">  
             <span class="material-symbols-outlined spin" style="font-size:80px;">progress_activity</span>
@@ -67,24 +68,38 @@
 
         <script src="{{ url_for('static', filename='js/script.js') }}"></script>
         <script>
-            const toggle = document.getElementById('theme-toggle');
-            
             document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme'))) {
-                document.body.classList.add('dark-theme');
-                toggle.textContent = 'light_mode';
-            } else {
-                document.body.classList.remove('dark-theme');
-                toggle.textContent = 'dark_mode';
-            }
-
-            toggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-theme');
-                const isDark = document.body.classList.contains('dark-theme');
-                toggle.textContent = isDark ? 'light_mode' : 'dark_mode';
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                const toggle = document.getElementById('theme-toggle');
+                const shutdown_btn = document.getElementById('shutdown');
+        
+                if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme'))) {
+                    document.body.classList.add('dark-theme');
+                    toggle.textContent = 'light_mode';
+                } else {
+                    document.body.classList.remove('dark-theme');
+                    toggle.textContent = 'dark_mode';
+                }
+        
+                toggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-theme');
+                    const isDark = document.body.classList.contains('dark-theme');
+                    toggle.textContent = isDark ? 'light_mode' : 'dark_mode';
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+        
+                shutdown_btn.addEventListener('click', () => {
+                    const userConfirmed = confirm("Вы точно хотите завершить программу?");
+    
+                    if (userConfirmed) {
+                        fetch("http://127.0.0.1:43782/shutdown")
+                            .then(res => {})
+                            .then(data => {})
+                            .catch(err => {
+                                window.close()
+                            });
+                    }
+                });
             });
-        });
-        </script>
+        </script>        
     </body>
 </html>

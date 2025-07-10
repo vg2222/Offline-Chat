@@ -372,21 +372,36 @@ input::placeholder {
 
 #theme-toggle {
     position: fixed;
-    bottom: 0;
-    left: 0;
+    bottom: 20px;
+    left: 20px;
     z-index: 99999;
     background: none;
     border: none;
     font-size: 28px;
     color: var(--text-color);
     cursor: pointer;
-    padding: 25px;
+    padding: 10px;
     transition: transform 0.2s ease, color 0.3s ease;
 }
 
 #theme-toggle:hover {
     transform: rotate(20deg);
 }
+
+#shutdown {
+    position: fixed;
+    bottom: 20px;
+    left: 55px;
+    z-index: 99999;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 10px;
+    transition: transform 0.2s ease, color 0.3s ease;
+}
+
 
 * {
     transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;

@@ -181,10 +181,8 @@ def scan_network(network_cidr, port=43782, max_workers=50):
         try:
             result = sock.connect_ex((ip, port))
             if result == 0:
-                ip_list.append(ip)
-
-                if my_ip in ip_list:
-                    ip_list.remove(my_ip)
+                if my_ip != ip:
+                    ip_list.append(ip)
             return ip, result == 0
         except:
             return ip, False
@@ -331,7 +329,8 @@ def send_message():
 
             for target in ip_list:
                 try:
-                    send_to(target, message_text, from_ip, to_ip)
+                    if target != get_local_ip():
+                        send_to(target, message_text, from_ip, to_ip)
                 except Exception as e:
                     warn(f"Не удалось отправить сообщение {msg_id} на {target}: {e}")
 

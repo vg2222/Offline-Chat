@@ -219,6 +219,25 @@ def open_web():
 
 if __name__ == "__main__":
     if debug:print("Инициализация библиотек и проверка данных...")
+    try:
+        import certificate_manager
+    except Exception as e:
+        showerror("Критическая ошибка", "Данная сборка повреждена, пожалуйста скачайте последний релиз с GitHub.\n\nИли попробуйте запустить программу БЕЗ прав администратора")
+        os.abort()
+    
+    try:
+        cert = open("certificate.txt", "r")
+        certificate = cert.read()
+        cert.close()
+    except Exception as e:
+        showerror("Критическая ошибка", "Данная сборка модифицирована или использует неофицальные файлы для запуска.\n\nОшибка: Файл сертификата не обнаружен")
+        os.abort()
+    
+    cert_result = certificate_manager.check(certificate)
+    if cert_result == "not_valid":
+        showerror("Критическая ошибка", "Данная сборка модифицирована или использует неофицальные файлы для запуска.\n\nОшибка: Неверный сертификат")
+        os.abort()
+
     try:                  # Установить библиотеки если не установлены
         import termcolor
         import subprocess 

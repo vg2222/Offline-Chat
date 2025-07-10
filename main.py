@@ -20,6 +20,7 @@ import threading
 import random
 import webbrowser
 import logging
+import sys
 
 from tkinter.messagebox import showerror, showinfo, showwarning, askyesno     # Для уведомлений 
 
@@ -28,6 +29,7 @@ from tkinter.messagebox import showerror, showinfo, showwarning, askyesno     # 
 LocalNetworkScanEnabled = True          # Есть ли доступ к поиску по локальной сети  =  есть ли ограничения?
 DISCOVERY_PORT = 43782                  # Порт обнаружения и передачи данных в локальной сети (не обязательно менять, менять если конфликт портов)
 BUFFER_SIZE = 1024                      # Максимальное количество байт данных, которое программа может принять или отправить за один раз (не обязательно менять)
+LOCK_PORT = 45678
 
 # -----------------------------------------------------
 
@@ -212,31 +214,24 @@ def send_to(ip, message, sender, channel):
             error(f"Ошибка отправки, код ошибки: {str(status)}")
 
 def open_web():
-    time.sleep(2)
+    time.sleep(4)
     webbrowser.open_new_tab("http://127.0.0.1:43782")
-    
+
+def check_if_started():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("127.0.0.1", LOCK_PORT))
+    except socket.error:
+        from tkinter.messagebox import showerror
+        showerror("Ошибка", "Программа уже запущена!")
+        sys.exit()
+    return s
+
 # Проверка настроек 
 
 if __name__ == "__main__":
     if debug:print("Инициализация библиотек и проверка данных...")
-    try:
-        import certificate_manager
-    except Exception as e:
-        showerror("Критическая ошибка", "Данная сборка повреждена, пожалуйста скачайте последний релиз с GitHub.\n\nИли попробуйте запустить программу БЕЗ прав администратора")
-        os.abort()
-    
-    try:
-        cert = open("certificate.txt", "r")
-        certificate = cert.read()
-        cert.close()
-    except Exception as e:
-        showerror("Критическая ошибка", "Данная сборка модифицирована или использует неофицальные файлы для запуска.\n\nОшибка: Файл сертификата не обнаружен")
-        os.abort()
-    
-    cert_result = certificate_manager.check(certificate)
-    if cert_result == "not_valid":
-        showerror("Критическая ошибка", "Данная сборка модифицирована или использует неофицальные файлы для запуска.\n\nОшибка: Неверный сертификат")
-        os.abort()
+    lock_socket = check_if_started()
 
     try:                  # Установить библиотеки если не установлены
         import termcolor
@@ -391,6 +386,10 @@ def get_ip():
     ip = str(get_local_ip())
     return jsonify({"IP": ip})
 
+@app.route("/shutdown", methods=['GET'])
+def exit():
+    os.abort()
+
 @app.route("/members", methods=['GET', 'POST'])
 def get_members():
     count = len(ip_list) + 1
@@ -402,7 +401,7 @@ def status():
 
 if __name__ == '__main__':
     threading.Thread(target=open_web(), daemon=True)
-  
+
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
 

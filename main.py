@@ -222,6 +222,7 @@ def check_if_started():
     except socket.error:
         from tkinter.messagebox import showerror
         showerror("Ошибка", "Программа уже запущена!")
+        webbrowser.open_new_tab("http://127.0.0.1:43782")
         sys.exit()
     return s
 

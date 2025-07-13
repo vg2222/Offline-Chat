@@ -177,10 +177,38 @@ input::placeholder {
     cursor: pointer;
     font-size: 20px;
     transition-duration: 0.5s;
+    color: var(--text-color);
 }
 
-.send-btn:hover {
+.upload-btn {
+    position: absolute;
+    top: 50%;
+    right: 46px;
+    transform: translateY(-30%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    transition-duration: 0.5s;
     color: var(--text-color);
+}
+
+#file_upload {
+    border: none;
+    display: flex;
+    position: fixed;
+    cursor: pointer;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+}
+
+#file_upload::file-selector-button {
+    color: rgba(0, 0, 0, 0);
+    background-color: rgba(0, 0, 0, 0);
+    border: rgba(0, 0, 0, 0);
+    cursor: pointer;
 }
 
 .spin {
@@ -252,7 +280,19 @@ input::placeholder {
     font-size: 17px;
     color: var(--text-color);
 }
-  
+
+a.file-link {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+a.file-link:hover {
+    text-decoration: none;
+    color: var(--placeholder);
+}
+
 
 .logo-group {
     position: fixed;

@@ -17,6 +17,9 @@ let loaded = true
 
 let currentIP = ""
 
+let lastMessageTime = 0;
+let lastFileTime = 0;
+
 fetch('/request-ip')
   .then(response => { return response.json(); })
   .then(data => {currentIP = data.IP;})
@@ -52,20 +55,31 @@ const intervalId = setInterval(() => {
     });
 }, 500); 
 
+function send_message(isFile = false) {
+    const now = Date.now();
+    if (!isFile && now - lastMessageTime < 2000) {
+        alert("Не удалось отправить данное сообщение, подождите 2 секунды.\n");
+        return;
+    }
 
-function send_message() {
-    let message = message_entry.value
+    const message = message_entry.value.trim();
+    if (!message) return;
+
+    if (!isFile) lastMessageTime = now;
 
     const data = {
         "IP": currentIP,
         "Message": message,
-        "To": "global"
+        "To": current_channel
     };
 
     fetch("http://127.0.0.1:43782/send_message", {
-        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
 
-    message_entry.value = ""
+    if (!isFile) message_entry.value = "";
 }
 
 document.addEventListener('keydown', (event) => {
@@ -75,6 +89,56 @@ document.addEventListener('keydown', (event) => {
         send_message()
     }
 });
+
+function uploadFile() {
+    const now = Date.now();
+    if (now - lastFileTime < 30000) {
+        alert("Не удалось отправить файл, подождите 30 секунд перед отправкой следующего.");
+        return;
+    }
+
+    const fileInput = document.getElementById('file_upload');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024 * 1024) {
+        alert("Не удалось отправить файл: превышен лимит в 100 МБ.");
+        return;
+    }
+
+    lastFileTime = now;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("channel", current_channel);
+
+    fetch("http://127.0.0.1:43782/upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.result === "ok") {
+            const fileMessage = `📎 Файл: ${data.filename}`;
+            const sendData = {
+                "IP": currentIP,
+                "Message": fileMessage,
+                "To": current_channel
+            };
+            fetch("http://127.0.0.1:43782/send_message", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sendData)
+            });
+        } else {
+            alert("Не удалось отправить файл: " + data.message);
+        }
+    })
+    .catch(err => {
+        console.error("Ошибка при загрузке:", err);
+    });
+}
+
 
 function update_members() {
     fetch("http://127.0.0.1:43782/members", {
@@ -139,7 +203,11 @@ try {
             }
 
             clone.querySelector('.message-name').innerText = msg.user;
-            clone.querySelector('.message-text').innerText = msg.text;
+            clone.querySelector('.message-text').innerHTML = msg.text.startsWith("📎 Файл: ")
+            ? `<a href="/uploaded/${msg.text.replace("📎 Файл: ", "").trim()}" class="file-link" target="_blank">📎 Файл: ${msg.text.replace("📎 Файл: ", "").trim()} (нажмите чтобы скачать)</a>`
+            : msg.text;
+            
+
             clone.querySelector('.message-time')
                 .innerText = new Date(msg.timestamp * 1000).toLocaleString();
         chatLog.appendChild(clone);

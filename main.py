@@ -33,7 +33,9 @@ LOCK_PORT = 45678
 
 # -----------------------------------------------------
 
-
+user_message_times = {}
+user_file_times = {}
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
 
 # Предефайн переменных
 global lastActivated
@@ -237,8 +239,9 @@ if __name__ == "__main__":
         import requests
         from flask_cors import CORS
         import ipaddress
+        import shutil
         from concurrent.futures import ThreadPoolExecutor, as_completed
-        from flask import Flask, jsonify, request, render_template
+        from flask import Flask, jsonify, request, render_template, send_from_directory
     except Exception as e:
         if askyesno("Не удалось запустить программу", "Не удалось найти некоторые библиотеки, вы хотите установить их сейчас?"):
             showinfo("Установка библиотек", "Установка последних версий... \n\nПрограмма будет автоматически перезапущена")
@@ -250,12 +253,13 @@ if __name__ == "__main__":
     try:
         import termcolor
         import subprocess 
+        import shutil
         import ipaddress
         from flask_cors import CORS
         from concurrent.futures import ThreadPoolExecutor, as_completed
         
         import requests
-        from flask import Flask, jsonify, request, render_template
+        from flask import Flask, jsonify, request, render_template, send_from_directory
     except Exception as e:
         showerror("Ошибка", "Не удалось установить библиотеки, установите библиотеки самостоятельно.")
         os.abort()
@@ -273,6 +277,11 @@ if __name__ == "__main__":
     if BUFFER_SIZE == None:
         error("BUFFER_SIZE - неверное значение.")
         os.abort()
+
+    if os.path.exists("uploaded"):
+        shutil.rmtree("uploaded")
+        os.makedirs("uploaded", exist_ok=True)
+
     termcolor.cprint("Получение текущего IP...", "blue")
     local_ip = get_local_ip()
     network_cidr = '.'.join(local_ip.split('.')[:-1]) + '.0/24'
@@ -293,51 +302,76 @@ CORS(app)
 def home():
     return render_template('index.html')
 
+UPLOAD_FOLDER = "uploaded"
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    from_ip = request.remote_addr
+    now = time.time()
+
+    if from_ip in user_file_times and now - user_file_times[from_ip] < 30:
+        return jsonify({'result': 'error', 'message': 'Файл можно отправлять раз в 30 секунд'}), 429
+
+    user_file_times[from_ip] = now
+
+    if 'file' not in request.files:
+        return jsonify({'result': 'error', 'message': 'Файл не найден'}), 400
+
+    file = request.files['file']
+    filename = file.filename
+    if file.content_length and file.content_length > MAX_FILE_SIZE:
+        return jsonify({'result': 'error', 'message': 'Файл превышает 100 МБ'}), 400
+
+    filepath = os.path.join("uploaded", filename)
+    file.save(filepath)
+
+    return jsonify({'result': 'ok', 'filename': filename})
+
+@app.route('/uploaded/<path:filename>')
+def serve_uploaded(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
 @app.route('/send_message', methods=['POST'])
 def send_message():
-    global ip_list, messages
+    global ip_list, messages, user_message_times
 
-    try:
-        data = request.get_json(force=True)
-        from_ip = data.get('IP', 'unknown')
-        message_text = data.get('Message', '').strip()
-        to_ip = data.get('To')
+    data = request.get_json(force=True)
+    from_ip = data.get('IP', 'unknown')
+    now = time.time()
 
-        if not message_text:
-            return jsonify({'result': 'empty'}), 400
-        if not to_ip:
-            return jsonify({'result': 'error', 'message': 'No target channel specified'}), 400
+    if from_ip in user_message_times and now - user_message_times[from_ip] < 2:
+        return jsonify({'result': 'error', 'message': 'Слишком частая отправка сообщений'}), 429
+    user_message_times[from_ip] = now
 
-        msg_id = str(random_id())
-        timestamp = int(time.time())
+    message_text = data.get('Message', '').strip()
+    to_ip = data.get('To')
 
-        if to_ip not in messages:
-            messages[to_ip] = {"Info": {"Name": to_ip, "Description": "", "Users": "", "AvalibleMessages": {}}}
+    if not message_text:
+        return jsonify({'result': 'empty'}), 400
+    if not to_ip:
+        return jsonify({'result': 'error', 'message': 'Не указан получатель'}), 400
 
-        messages[to_ip]["Info"]["AvalibleMessages"][msg_id] = {
-            "text": message_text,
-            "user": from_ip,
-            "timestamp": timestamp }
+    msg_id = str(random_id())
+    timestamp = int(time.time())
 
-        if to_ip == "global":
-            local_ip = get_local_ip()
-            network_cidr = '.'.join(local_ip.split('.')[:-1]) + '.0/24'
+    if to_ip not in messages:
+        messages[to_ip] = {"Info": {"Name": to_ip, "Description": "", "Users": "", "AvalibleMessages": {}}}
 
-            ip_list.clear()
-            scan_network(network_cidr)
+    messages[to_ip]["Info"]["AvalibleMessages"][msg_id] = {
+        "text": message_text,
+        "user": from_ip,
+        "timestamp": timestamp
+    }
 
-            for target in ip_list:
-                try:
-                    if target != get_local_ip():
-                        send_to(target, message_text, from_ip, to_ip)
-                except Exception as e:
-                    warn(f"Не удалось отправить сообщение {msg_id} на {target}: {e}")
+    if to_ip == "global":
+        local_ip = get_local_ip()
+        network_cidr = '.'.join(local_ip.split('.')[:-1]) + '.0/24'
+        scan_network(network_cidr)
 
-    except Exception as e:
-        error(f"Ошибка: {e}")
-        return jsonify({'result': 'error', 'message': str(e)}), 500
+        for target in ip_list:
+            if target != get_local_ip():
+                send_to(target, message_text, from_ip, to_ip)
 
-    info(f"Сообщение {msg_id} отправлено в канал {to_ip}: {message_text}")
     return jsonify({'result': 'ok', 'id': msg_id}), 200
 
 
@@ -368,15 +402,23 @@ def get_messages():
 @app.route("/receive", methods=['POST'])
 def receive_msg():
     data = request.get_json()
-    channel = data['channel']
-    msg_id = str(random_id())
+    
+    if data['sender'] != get_local_ip():
+        channel = data['channel']
+        msg_id = str(random_id())
 
-    if channel not in messages:
-        messages[channel] = {
-            "Info": {"Name": channel, "Description": "", "Users": "", "AvalibleMessages": {}}
+        if channel not in messages:
+            messages[channel] = {
+                "Info": {"Name": channel, "Description": "", "Users": "", "AvalibleMessages": {}}
+            }
+
+        messages[channel]["Info"]["AvalibleMessages"][msg_id] = {
+            "text": data['message'],
+            "user": data['sender'],
+            "timestamp": int(time.time())
         }
+        return '', 200
 
-    messages[channel]["Info"]["AvalibleMessages"][msg_id] = {"text": data['message'], "user": data['sender'], "timestamp": int(time.time())}
     return '', 200
 
 @app.route("/request-ip", methods=['GET'])
